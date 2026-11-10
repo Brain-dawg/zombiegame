@@ -8,9 +8,6 @@ ZNav.SafeNavAreas   <- {}
 ZNav.NAV_DEBUG      <- false // draw nav areas
 ZNav.WALKABLE_ENTS  <- [ "info_player_teamspawn", "item_teamflag", "team_control_point", "trigger_capture_area", "func_capturezone" ]
 ZNav.MAX_AREAS_PER_TICK <- 150
-// function ZNav::FindWalkablePoints() {
-
-// }
 
 GetAllAreas( ZNav.AllNavAreas )
 
@@ -37,11 +34,11 @@ function ZNav::GetWalkableEntities() {
     local walkable_ents = []
 
 	local e
-	foreach( ent in WALKABLE_ENTS ) {
-
+	foreach( ent in WALKABLE_ENTS )
 		while ( e = FindByClassname( e, ent ) )
 			walkable_ents.append( e )
-	}
+
+	// PAYLOAD TRACKS BELOW
 
     // helper to recursively run through branching tracks
     local function _altpath( first, altpath, altname ) {
@@ -80,8 +77,7 @@ function ZNav::GetWalkableEntities() {
         if ( !( first && last ) )
         	ZUtil.DevPrint( "Error getting payload tracks:\n\n%s\nStart: %s\nEnd: %s\n\nYour path_tracks might be misconfigured?", watcher.GetName(), first_name, last_name )
 
-        prev  = GetPropEntity( last, "m_pprevious" )
-
+        prev    = GetPropEntity( last, "m_pprevious" )
         altpath = GetPropEntity( prev, "m_paltpath" )
         altname = GetPropString( prev, "m_altName" )
 
@@ -95,7 +91,8 @@ function ZNav::GetWalkableEntities() {
             _altpath( first, altpath, altname )
         }
 
-        if ( prev ) walkable_ents.append( prev )
+        if ( prev )
+			walkable_ents.append( prev )
 
         // iterate backwards to the starting node
         while ( prev = GetPropEntity( prev, "m_pprevious" ) ) {
