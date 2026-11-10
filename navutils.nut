@@ -6,6 +6,7 @@ __CREATE_SCOPE( "__znav", "ZNav", null, "ZNavThink" )
 ZNav.AllNavAreas    <- {}
 ZNav.SafeNavAreas   <- {}
 ZNav.NAV_DEBUG      <- false // draw nav areas
+ZNav.WALKABLE_ENTS  <- [ "info_player_teamspawn", "item_teamflag", "team_control_point", "trigger_capture_area", "func_capturezone" ]
 ZNav.MAX_AREAS_PER_TICK <- 150
 // function ZNav::FindWalkablePoints() {
 
@@ -29,6 +30,83 @@ if ( !ZNav.AllNavAreas.len() && IsDedicatedServer() ) {
 	EntFire( "__zutil", "CallScriptFunction", "ChangeLevel", 3 )
 
 	Assert( false, msg.slice( 0, -1 ) )
+}
+
+function ZNav::GetWalkableEntities() {
+    
+    local walkable_ents = []
+
+	local e
+	foreach( ent in WALKABLE_ENTS ) {
+
+		while ( e = FindByClassname( e, ent ) )
+			walkable_ents.append( e )
+	}
+
+    // helper to recursively run through branching tracks
+    local function _altpath( first, altpath, altname ) {
+
+        if ( altpath ) {
+
+            walkable_ents.append( altpath )
+
+            if ( altpath = GetPropEntity( altpath, "m_paltpath" ) )
+                walkable_ents.append( altpath )                    
+
+            while ( altpath = GetPropEntity( altpath, "m_pnext" ) ) {
+
+                if ( altpath == first )
+                    continue
+
+                walkable_ents.append( altpath )
+            }
+        }
+
+        if ( altname != "" )
+            while ( altpath = FindByName( altpath, altname ) )
+                walkable_ents.append( altpath )
+    }
+
+    // grab the tracks from the watcher
+    for ( local watcher; watcher = FindByClassname( watcher, "team_train_watcher" ); ) {
+
+        local first, last, prev, altpath, altname
+        local first_name = GetPropString( watcher, "m_iszStartNode" )
+        local last_name = GetPropString( watcher, "m_iszGoalNode" )
+        // grab the start and end tracks
+        while ( last  = FindByName( last,  last_name  ) ) break
+        while ( first = FindByName( first, first_name ) ) break
+
+        if ( !( first && last ) )
+        	ZUtil.DevPrint( "Error getting payload tracks:\n\n%s\nStart: %s\nEnd: %s\n\nYour path_tracks might be misconfigured?", watcher.GetName(), first_name, last_name )
+
+        prev  = GetPropEntity( last, "m_pprevious" )
+
+        altpath = GetPropEntity( prev, "m_paltpath" )
+        altname = GetPropString( prev, "m_altName" )
+
+        foreach ( path in [ altpath, first, last, prev ] ) {
+
+            if ( !path || !path.IsValid() )
+                continue
+
+            altpath = GetPropEntity( path, "m_paltpath" )
+            altname = GetPropString( path, "m_altName" )
+            _altpath( first, altpath, altname )
+        }
+
+        if ( prev ) walkable_ents.append( prev )
+
+        // iterate backwards to the starting node
+        while ( prev = GetPropEntity( prev, "m_pprevious" ) ) {
+
+            walkable_ents.append( prev )
+            altpath = GetPropEntity( prev, "m_paltpath" )
+            altname = GetPropString( prev, "m_altName" )
+            _altpath( first, altpath, altname )
+        }
+    }
+    return walkable_ents
 }
 
 // pre-collect safe nav areas on load
@@ -82,9 +160,9 @@ function ZNav::GetSafeNavAreas() {
 				trace.mask  <- CONTENTS_SOLID
 				trace.hullmin <- area.GetCorner( NORTH_WEST )
 				trace.hullmax <- area.GetCorner( SOUTH_EAST )
-	
+
 				TraceHull( trace )
-	
+
 				if ( trace.hit && trace.enthit && trace.enthit.GetClassname() == "trigger_hurt" )
 					color = color_warn
 
@@ -127,45 +205,31 @@ function ZNav::NavGenerator() {
 
 	local player = GetListenServerHost()
 
-	local walkable_points = []
-	local e
-	foreach( i, ent in [ "info_player_teamspawn", "item_teamflag", "team_control_point", "trigger_capture_area", "func_capturezone" ] ) {
+	local walkable_ents = GetWalkableEntities()
 
-		yield printl( "collecting: " + ent ), true
-
-		while ( e = FindByClassname( e, ent ) )
-			walkable_points.append( e.GetCenter() )
-	}
-
-	foreach ( track, _ in ZMapLogic.payload_tracks )
-		if ( track )
-			walkable_points.append( track.GetOrigin() )
-
-	local points_len = walkable_points.len()
+	local points_len = walkable_ents.len()
 
 	printl( "WALKABLE POINTS: " + points_len )
 
 	local generate_delay = 0.0
 	// Process spawn points for current arena
-	foreach( i, point in walkable_points ) {
+	foreach( i, ent in walkable_ents ) {
 
-		if ( !point )
-			continue
+		if ( !ent ) continue
 
 		generate_delay += 0.01
 		ZUtil.ScriptEntFireSafe( player, format( @"
 
-			local origin = Vector( %f, %f, %f )
+			local origin = activator.GetAbsOrigin()
 			self.SetAbsOrigin( origin )
 			self.SnapEyeAngles( QAngle( 90, 0, 0 ) )
 			SendToConsole( `nav_mark_walkable` )
 			local progress = ( %d + 1 )
-			local total = %d
-			local str = `Marking Spawn Point: ` + origin.ToKVString() + ` Progress: ` + progress + ` / ` + total
+			local str = `Marking Spawn Point: ` + origin.ToKVString() + ` Progress: ` + progress + ` / ` + %d
 			printl( str )
 			ClientPrint( null, 3, str )
 
-		", point.x, point.y, point.z, i, points_len ), generate_delay, null, null )
+		", i, points_len ), generate_delay, ent )
 
 		yield true
 	}
@@ -210,7 +274,7 @@ function ZNav::CreateNav() {
 
 			StringToFile( "__NAV_DISCONNECT", "1" )
 			// EntFire( "__znav", "CallScriptFunction", "DisconnectAreas", 1 )
-			// ZUtil.ScriptEntFireSafe( player, "SendToConsole(`nav_analyze`)", 2 )
+			// ZUtil.ScriptEntFireSafe( player, "SendToConsole( `nav_analyze` )", 2 )
 		}
 
 		return 0.05
@@ -229,8 +293,8 @@ function CTFNavArea::ComputePortal( to, dir ) {
 	local to_nwCorner = to.GetCorner( NORTH_WEST )
 	local to_seCorner = to.GetCorner( SOUTH_EAST )
 
-	if ( dir == NORTH || dir == SOUTH )
-	{
+	if ( dir == NORTH || dir == SOUTH ) { 
+
 		if ( dir == NORTH )
 			center.y = nwCorner.y
 		else
@@ -251,8 +315,8 @@ function CTFNavArea::ComputePortal( to, dir ) {
 
 		center.x = ( left + right ) * 0.5
 	}
-	else
-	{
+	else { 
+
 		if ( dir == WEST )
 			center.x = nwCorner.x
 		else
@@ -315,8 +379,8 @@ function ZNav::DisconnectAreas() {
 
 					to = adjacentArea.GetClosestPointOnArea( to )
 
-					if ( (to.z - from.z ) > STEP_HEIGHT )
-					{
+					if ( ( to.z - from.z ) > STEP_HEIGHT ) { 
+
 						area.DebugDrawFilled( 0, 255, 0, 32, 15, true, 0 )
 						adjacentArea.DebugDrawFilled( 255, 0, 0, 32, 15, true, 0 )
 						DebugDrawLine( from, to, 255, 255, 255, true, 15 )
@@ -336,7 +400,7 @@ function ZNav::DisconnectAreas() {
 	function ThinkTable::DisconnectAreaThink() {
 
 		if ( gen.getstatus() == "dead" )
-			return SendToConsole("nav_save"), delete ThinkTable.DisconnectAreaThink
+			return SendToConsole( "nav_save" ), delete ThinkTable.DisconnectAreaThink
 
 		resume gen
 		return 0.05

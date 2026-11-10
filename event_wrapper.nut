@@ -8,7 +8,7 @@
 // Call order for events is handled by this script instead of vscript_server.nut.
 
 // TODO: Performance benchmarks.
-// We use this to dynamically add/remove events at potentially critical times (large piles of bot spawns mostly)
+// We use this to dynamically add/remove events at potentially critical times ( large piles of bot spawns mostly )
 // So far I haven't seen any PERF WARNINGS in console using this, some bot tags may yell on bot/player spawn.
 __CREATE_SCOPE( "__zevents", "ZEvents" )
 
@@ -38,7 +38,7 @@ if ( !( "TableId" in ZEvents ) )
 
 function ZEvents::_OnDestroy() {
 
-    if ("HOOK_EVENT" in ROOT)
+    if ( "HOOK_EVENT" in ROOT )
         delete ::HOOK_EVENT
 
     ClearEvents( null )
@@ -158,6 +158,7 @@ function ZEvents::CollectEvents() {
         local event_string = event == "OnTakeDamage" ? "OnScriptHook_" : "OnGameEvent_"
 
         // set up hook table
+        // add to old table reference to preserve existing event hooks
         old_table[ event_string + event ] <- function( params ) {
 
             foreach( i, tbl in call_order )
@@ -190,7 +191,7 @@ function ZEvents::CollectEvents() {
 
 function ZEvents::ClearEvents( index = "unordered" ) {
 
-    if (index == null || index == "*" ) {
+    if ( index == null || index == "*" ) {
 
         ZEvents.EventsPreCollect <- {}
         ZEvents.CollectedEvents  <- {}
@@ -203,21 +204,21 @@ function ZEvents::ClearEvents( index = "unordered" ) {
 ::HOOK_EVENT <- ZEvents.AddRemoveEventHook.bindenv( ZEvents )
 
 //examples
-// _EventWrapper( "player_death", "FuncNameHereA", function( params ) {
+// HOOK_EVENT( "player_death", "FuncNameHereA", function( params ) {
 //     printl( params.userid + " died first" )
 // }, 0 )
-// _EventWrapper( "player_death", "FuncNameHereB", function( params ) {
+// HOOK_EVENT( "player_death", "FuncNameHereB", function( params ) {
 //     printl( params.userid + " died first" )
 // }, 0 )
-// _EventWrapper( "player_death", "FuncNameHere1", function( params ) {
+// HOOK_EVENT( "player_death", "FuncNameHere1", function( params ) {
 //     printl( params.userid + " died1" )
 // }, 1 )
-// _EventWrapper( "player_death", "FuncNameHere2", function( params ) {
+// HOOK_EVENT( "player_death", "FuncNameHere2", function( params ) {
 //     printl( params.userid + " died2" )
 // }, 2 )
-// _EventWrapper( "player_death", "FuncNameHere3", function( params ) {
+// HOOK_EVENT( "player_death", "FuncNameHere3", function( params ) {
 //     printl( params.userid + " died3" )
 // }, 3 )
-// _EventWrapper( "player_death", "FuncNameHere4", function( params ) {
+// HOOK_EVENT( "player_death", "FuncNameHere4", function( params ) {
 //     printl( params.userid + " died last" )
 // } )

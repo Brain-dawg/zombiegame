@@ -83,10 +83,10 @@ class BasicZombie {
 
 	path_debug 			= null
 	trace_debug 			= null
-    constructor(pos = null) {
+    constructor( pos = null ) {
 
         this.sound_data = {
-        
+
             attack    = "zombie/attack.wav"
             death     = "zombie/death.wav"
             idle      = "zombie/idle.wav"
@@ -95,13 +95,13 @@ class BasicZombie {
             pain      = "zombie/pain.wav"
         }
 
-		foreach(sound in this.sound_data)
+		foreach( sound in this.sound_data )
 			if ( !IsSoundPrecached( sound ) )
 				PrecacheSound( sound )
 
         this.base_ent = BaseZombieEntity( pos )
 		this.spawn_pos = pos
-    
+
         this.scope       = base_ent.GetScriptScope()
 		this.team        = base_ent.GetTeam()
 		this.cur_pos     = base_ent.GetOrigin()
@@ -141,12 +141,12 @@ class BasicZombie {
 		this.wandering 		 	 = false
 		this.spawn_pos		 	 = Vector()
 		this.squad_leader 		 = null
-		
-		this.seq_idle = base_ent.LookupSequence("Stand_MELEE_ALLCLASS")
-		this.seq_run = base_ent.LookupSequence("Run_MELEE_ALLCLASS")
-		// this.seq_attack = base_ent.LookupSequence("attackStand_MELEE_ALLCLASS")
-		this.seq_attack = base_ent.LookupSequence("Stand_MELEE_ALLCLASS")
-		this.pose_move_x = base_ent.LookupPoseParameter("move_x")
+
+		this.seq_idle = base_ent.LookupSequence( "Stand_MELEE_ALLCLASS" )
+		this.seq_run = base_ent.LookupSequence( "Run_MELEE_ALLCLASS" )
+		// this.seq_attack = base_ent.LookupSequence( "attackStand_MELEE_ALLCLASS" )
+		this.seq_attack = base_ent.LookupSequence( "Stand_MELEE_ALLCLASS" )
+		this.pose_move_x = base_ent.LookupPoseParameter( "move_x" )
 
     }
     	function IsLookingTowards( target, cos_tolerance ) {
@@ -161,7 +161,7 @@ class BasicZombie {
 
 		local tolerance = 0.5736 // cos( 110/2 )
 
-		if (!target || !target.IsValid())
+		if ( !target || !target.IsValid() )
 			return false
 
 		local delta = target.GetOrigin() - cur_eye_pos
@@ -199,12 +199,12 @@ class BasicZombie {
 	function IsValidThreat( target ) {
 
 		return (
-			target 
-			&& target.IsValid() 
-			&& target.IsAlive() 
-			&& target.GetTeam() != base_ent.GetTeam() 
-			&& target.GetLastKnownArea() 
-			&& target.GetLastKnownArea().IsValidForWanderingPopulation() 
+			target
+			&& target.IsValid()
+			&& target.IsAlive()
+			&& target.GetTeam() != base_ent.GetTeam()
+			&& target.GetLastKnownArea()
+			&& target.GetLastKnownArea().IsValidForWanderingPopulation()
 		)
 	}
 
@@ -256,7 +256,7 @@ class BasicZombie {
 		local threatarray = []
 
 		for ( local obj; obj = FindByClassname( obj, "obj_*" ); )
-			if (obj.GetTeam() != base_ent.GetTeam())
+			if ( obj.GetTeam() != base_ent.GetTeam() )
 				threatarray.append( obj )
 
 		foreach ( player, _ in ZUtil.PlayerTables.Survivors ) {
@@ -280,7 +280,7 @@ class BasicZombie {
 		threat_time 	   = time
 		threat_behind_time = time + 0.5
 
-		path_recompute_time = time + (MAX_RECOMPUTE_TIME * 0.5)
+		path_recompute_time = time + ( MAX_RECOMPUTE_TIME * 0.5 )
 
 		wandering 		   = false
 	}
@@ -313,7 +313,7 @@ class BasicZombie {
 	function OnTakeDamage( attacker ) {
 
 		if ( health <= 0 ) {
-			
+
 			base_ent.EmitSound( sound_data.death )
 			SetPropInt( base_ent, "m_lifeState", LIFE_DYING )
 			base_ent.BecomeRagdollOnClient( damage_force )
@@ -323,7 +323,7 @@ class BasicZombie {
 			return
 		}
 
-		else if ( (threat_time =- 1.0) > threat_time )
+		else if ( ( threat_time =- 1.0 ) > threat_time )
 			return
 
 		else if ( attacker != base_ent && threat_dist > GetThreatDistanceSqr( attacker ) )
@@ -340,7 +340,7 @@ class BasicZombie {
 		cur_eye_pos = base_ent.EyePosition()
 		cur_eye_ang = base_ent.EyeAngles()
 		cur_eye_fwd = cur_eye_ang.Forward()
-		
+
 		if ( !attacking ) {
 
 			base_ent.SetSequence( cur_speed > 25.0 ? seq_run : seq_idle )
@@ -353,7 +353,7 @@ class BasicZombie {
 
 		base_ent.StudioFrameAdvance()
 		base_ent.DispatchAnimEvents( base_ent )
-		
+
 		if ( wandering && threat_time <= time )
 			wandering = false
 
@@ -377,7 +377,7 @@ class BasicZombie {
 
 		// unstuck behavior, tell the base_ent to path to another nearby area
 		stucktime = locomotion.GetStuckDuration()
-	
+
 		if ( stucktime < 1.0 ) {
 
 			FindPathToThreat()
@@ -388,7 +388,7 @@ class BasicZombie {
 
 			path_recompute_time = time + 10.0
 			local area = base_ent.GetLastKnownArea()
-			
+
 			if ( !area ) {
 
 				GetNavAreasInRadius( cur_pos, 192.0, path_areas )
@@ -410,12 +410,12 @@ class BasicZombie {
 				// 	printf( "base_ent %s STUCK!\n pos: %s stuck time: %.2f last known area: '%s'\n", base_ent.tostring(), cur_pos.ToKVString(), stucktime, ""+area )
 				// 	SetPropBool( base_ent, "m_bGlowEnabled", stucktime > 5.0 )
 				// }
-		
+
 				for ( local navdir = 0, new_pos, new_area; navdir < NUM_DIRECTIONS; navdir++ ) {
 
 					new_area = area.GetRandomAdjacentArea( navdir )
 
-					if ( !new_area || !(new_area in ZNav.SafeNavAreas) )
+					if ( !new_area || !( new_area in ZNav.SafeNavAreas ) )
 						continue
 
 					new_pos = new_area.FindRandomSpot()
@@ -433,11 +433,11 @@ class BasicZombie {
 						UpdatePath( new_pos, true )
 
 						// very stuck, probably in world geometry/map entity
-						if ( stucktime > 10.0 || 
-							( !IsVisible( threat ) 
-							&& threat_dist > MAX_THREAT_DISTANCE 
-							&& !new_area.IsCompletelyVisibleToTeam( TF_TEAM_RED ) 
-							&& !new_area.IsCompletelyVisibleToTeam( TF_TEAM_BLUE ) ) 
+						if ( stucktime > 10.0 ||
+							( !IsVisible( threat )
+							&& threat_dist > MAX_THREAT_DISTANCE
+							&& !new_area.IsCompletelyVisibleToTeam( TF_TEAM_RED )
+							&& !new_area.IsCompletelyVisibleToTeam( TF_TEAM_BLUE ) )
 						) {
 
 							base_ent.SetAbsOrigin( new_pos + Vector( 0, 0, 20 ) )
@@ -511,7 +511,7 @@ class BasicZombie {
 			}
 
 			else if ( !GetNavAreasFromBuildPath( area_start, area_end, pos_end, 0.0, TF_TEAM_HALLOWEEN, true, path_areas ) ) {
-				
+
 				// hack to make zombies move straight to the threat if we can't find a proper path
 				// if ( IsVisible( threat ) )
 					// return SetPropInt( base_ent, "m_nWaterLevel", 3 )
@@ -547,7 +547,7 @@ class BasicZombie {
 				local to_c1, to_c2, fr_c1, fr_c2
 				for ( local i = 0; i <= path_count; i++ ) {
 
-					if ( !( i in path_points) || !(i + 1 in path_points) )
+					if ( !( i in path_points ) || !( i + 1 in path_points ) )
 						continue
 
 
@@ -626,7 +626,7 @@ class BasicZombie {
 		if ( path_index == null )
 			path_index = path_count
 
-		if ( !(path_index in path_points) || ( path_points[path_index].pos - base_ent.GetOrigin() ).LengthSqr() < 128.0 ) {
+		if ( !( path_index in path_points ) || ( path_points[path_index].pos - base_ent.GetOrigin() ).LengthSqr() < 128.0 ) {
 			return ResetPath()
 		}
 
@@ -642,7 +642,7 @@ class BasicZombie {
 			local area_count = path_areas.len()
 
 			for ( local i = 0, _area = path_areas["area0"]; i < area_count; i++ ) {
-				
+
 				if ( !_area ) continue
 
 				local x = ( ( area_count - i - 0.0 ) / area_count ) * 255.0
@@ -653,7 +653,7 @@ class BasicZombie {
 		}
 
 		if ( move )
-			MoveToThreat( lookat )			
+			MoveToThreat( lookat )
 	}
 
 	function TryAvoidObstacles( target_pos ) {
@@ -662,14 +662,14 @@ class BasicZombie {
 		local motion_fwd = target_pos - cur_pos
 		motion_fwd.z = 0.0
 		motion_fwd.Norm()
-		
+
 		// Get 2D lateral motion vector, which is perpendicular to the forward motion vector, going left or right
-		local motion_lat = Vector(-motion_fwd.y, motion_fwd.x)
+		local motion_lat = Vector( -motion_fwd.y, motion_fwd.x )
 
 		// Get the ground normal and compute the 3D motion vectors
 		local normal = locomotion.GetGroundNormal()
-		motion_fwd = motion_lat.Cross(normal)
-		motion_lat = motion_fwd.Cross(normal)
+		motion_fwd = motion_lat.Cross( normal )
+		motion_lat = motion_fwd.Cross( normal )
 
 		// The length vector of the traces going forward
 		local fwd_vec = motion_fwd * 60.0
@@ -681,12 +681,12 @@ class BasicZombie {
 		local point_offset = target_pos
 
 		local left_traces = TraceLinePlayersIncluded( trace_offset, trace_offset + fwd_vec + lat_vec, base_ent )
-		// left_traces += TraceLine( trace_offset, trace_offset + fwd_vec + (lat_vec * 0.5), base_ent )
-		left_traces += TraceLinePlayersIncluded( trace_offset, trace_offset + fwd_vec + (lat_vec * 0.25), base_ent )
+		// left_traces += TraceLine( trace_offset, trace_offset + fwd_vec + ( lat_vec * 0.5 ), base_ent )
+		left_traces += TraceLinePlayersIncluded( trace_offset, trace_offset + fwd_vec + ( lat_vec * 0.25 ), base_ent )
 
 		local right_traces = TraceLinePlayersIncluded( trace_offset, trace_offset + fwd_vec - lat_vec, base_ent )
-		// right_traces += TraceLine( trace_offset, trace_offset + fwd_vec - (lat_vec * 0.5), base_ent )
-		right_traces += TraceLinePlayersIncluded( trace_offset, trace_offset + fwd_vec - (lat_vec * 0.25), base_ent )
+		// right_traces += TraceLine( trace_offset, trace_offset + fwd_vec - ( lat_vec * 0.5 ), base_ent )
+		right_traces += TraceLinePlayersIncluded( trace_offset, trace_offset + fwd_vec - ( lat_vec * 0.25 ), base_ent )
 
 		if ( left_traces != 2.0 )
 			point_offset -= lat_vec
@@ -697,20 +697,20 @@ class BasicZombie {
 		if ( trace_debug && left_traces + right_traces != 4.0 ) {
 
 			// for ( local i = left_traces + right_traces; i > 0; i-- ) {
-			// 	DebugDrawLine( trace_offset, trace_offset + fwd_vec + (lat_vec * (i * 0.25)), 255, 0, 33 * (left_traces + right_traces), false, 0.1 )
+			// 	DebugDrawLine( trace_offset, trace_offset + fwd_vec + ( lat_vec * ( i * 0.25 ) ), 255, 0, 33 * ( left_traces + right_traces ), false, 0.1 )
 			// }
 
 			DebugDrawLine( trace_offset, trace_offset + fwd_vec + lat_vec, 255, 0, 200, false, 0.1 )
-			// DebugDrawLine( trace_offset, trace_offset + fwd_vec + (lat_vec * 0.5), 255, 0, 200, false, 0.1 )
-			DebugDrawLine( trace_offset, trace_offset + fwd_vec + (lat_vec * 0.25), 255, 0, 200, false, 0.1 )
+			// DebugDrawLine( trace_offset, trace_offset + fwd_vec + ( lat_vec * 0.5 ), 255, 0, 200, false, 0.1 )
+			DebugDrawLine( trace_offset, trace_offset + fwd_vec + ( lat_vec * 0.25 ), 255, 0, 200, false, 0.1 )
 
 			DebugDrawLine( trace_offset, trace_offset + fwd_vec - lat_vec, 255, 0, 200, false, 0.1 )
-			// DebugDrawLine( trace_offset, trace_offset + fwd_vec - (lat_vec * 0.5), 255, 0, 200, false, 0.1 )
-			DebugDrawLine( trace_offset, trace_offset + fwd_vec - (lat_vec * 0.25), 255, 0, 200, false, 0.1 )
+			// DebugDrawLine( trace_offset, trace_offset + fwd_vec - ( lat_vec * 0.5 ), 255, 0, 200, false, 0.1 )
+			DebugDrawLine( trace_offset, trace_offset + fwd_vec - ( lat_vec * 0.25 ), 255, 0, 200, false, 0.1 )
 
-			local box = Vector(10, 10, 10)
+			local box = Vector( 10, 10, 10 )
 			DebugDrawBox( target_pos, box * -1.0, box, 255, 255, 0, 10, 0.1 )
-			
+
 			if ( point_offset != target_pos )
 				DebugDrawBox( point_offset, box * -1.0, box, 0, 255, 255, 10, 0.1 )
 		}
@@ -728,7 +728,7 @@ class BasicZombie {
 		ResetPath()
 
 		threat_time = time + howlong
-		
+
 		local wander_pos = ZNav.GetRandomSafeArea().GetCenter()
 		// if ( ( cur_pos - spawn_pos ).LengthSqr() < MAX_THREAT_DISTANCE )
 			// wander_pos = ZNav.GetRandomSafeArea().GetCenter()
@@ -737,12 +737,12 @@ class BasicZombie {
 
 		SetThreat( null )
 		UpdatePath( wander_pos, false )
-		path_recompute_time = time + (MAX_RECOMPUTE_TIME * 2)
+		path_recompute_time = time + ( MAX_RECOMPUTE_TIME * 2 )
 	}
 
 	function MoveToThreat( lookat = true, turnrate_min = 600, turnrate_max = 1500 ) {
 
-		// if ( !(path_index in path_points) )
+		// if ( !( path_index in path_points ) )
 		// 	__DumpScope( 0, path_points )
 
 		// we're underwater or very close and can see our target, just move directly at them
@@ -776,7 +776,7 @@ class BasicZombie {
 
 		local frac = locomotion.FractionPotentiallyTraversable( cur_pos, point, true )
 
-		if ( area.GetDistanceSquaredToPoint( cur_pos ) < 64.0 || area.ContainsOrigin(cur_pos) ) {
+		if ( area.GetDistanceSquaredToPoint( cur_pos ) < 64.0 || area.ContainsOrigin( cur_pos ) ) {
 
 			if ( path_debug ) {
 
@@ -790,7 +790,7 @@ class BasicZombie {
 		}
 
 		if ( frac < 0.05 ) {
-			
+
 			if ( path_debug ) {
 
 				// printf( "UPDATING PATH! base_ent: %s frac: %.2f\n", base_ent.tostring(), frac )
@@ -825,7 +825,7 @@ class BasicZombie {
 
 				i++
 				local x = ( ( area_count - i - 0.0 ) / area_count ) * 255.0
-				area.DebugDrawFilled( x, (x / 2), 0, 50, 0.075, true, 0.0 )
+				area.DebugDrawFilled( x, ( x / 2 ), 0, 50, 0.075, true, 0.0 )
 			}
 		}
 	}
@@ -860,13 +860,13 @@ function BaseZombieEntity( pos = Vector() ) {
     ent.KeyValueFromFloat( "speed", speed )
     ent.KeyValueFromFloat( "health", INT_MAX )
     ent.KeyValueFromString( "model", model )
-	ent.KeyValueFromInt("skin", 5 )
+	ent.KeyValueFromInt( "skin", 5 )
 	ent.KeyValueFromFloat( "playbackrate", 1.0 )
 	ent.KeyValueFromString( "targetname", "__z_" + name + "_" + ent.entindex() )
 	ent.SetTeam( TF_TEAM_HALLOWEEN )
 
     SetPropInt( ent, "m_bloodColor", 2 )
-	SetPropVector( ent, "m_vecViewOffset", Vector(0, 0, 56) )
+	SetPropVector( ent, "m_vecViewOffset", Vector( 0, 0, 56 ) )
 
     ent.DispatchSpawn()
 
@@ -888,22 +888,22 @@ function BaseZombieEntity( pos = Vector() ) {
     return ent
 }
 
-HOOK_EVENT("npc_hurt", "ZombieTakeDamage", function(params) {
+HOOK_EVENT( "npc_hurt", "ZombieTakeDamage", function( params ) {
 
 	local victim   = EntIndexToHScript( params.entindex )
 	local scope = victim.GetScriptScope()
 	local attacker = params.attacker_player
 
-	if ( !scope || !("baseclass" in scope) )
+	if ( !scope || !( "baseclass" in scope ) )
 		return
-	
+
 	scope.baseclass.health -= params.damageamount
 
 	scope.baseclass.OnTakeDamage( GetPlayerFromUserID( attacker ) )
 
-})
+} )
 
-HOOK_EVENT( "OnTakeDamage", "ZombieTakeDamage", function(params) {
+HOOK_EVENT( "OnTakeDamage", "ZombieTakeDamage", function( params ) {
 
 	local victim = params.const_entity
 
@@ -918,4 +918,4 @@ HOOK_EVENT( "OnTakeDamage", "ZombieTakeDamage", function(params) {
 
 	if ( "baseclass" in scope )
 		scope.baseclass.damage_force = params.damage_force
-})
+} )

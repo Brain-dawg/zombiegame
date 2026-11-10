@@ -2,11 +2,11 @@
 ::ROOT <- getroottable()
 CONST.MAX_CLIENTS <- MaxClients().tointeger()
 
-if (!("ConstantNamingConvention" in CONST)) {
+if ( !( "ConstantNamingConvention" in CONST ) ) {
 
-	foreach (a,b in Constants) {
+	foreach ( a,b in Constants ) {
 
-		foreach (k,v in b) {
+		foreach ( k,v in b ) {
 
 			if ( v == null )
 				v = 0
@@ -17,10 +17,10 @@ if (!("ConstantNamingConvention" in CONST)) {
 	}
 }
 
-foreach(_cls in [NetProps, Entities, EntityOutputs, ROOT.NavMesh, Convars])
-	foreach(name, method in _cls.getclass())
-		if (!(name in ROOT) && name != "IsValid")
-			ROOT[name] <- method.bindenv(_cls)
+foreach( _cls in [NetProps, Entities, EntityOutputs, ROOT.NavMesh, Convars] )
+	foreach( name, method in _cls.getclass() )
+		if ( !( name in ROOT ) && name != "IsValid" )
+			ROOT[name] <- method.bindenv( _cls )
 
 // String caches
 const STRING_NETPROP_ITEMDEF 	  	    = "m_AttributeManager.m_Item.m_iItemDefinitionIndex"

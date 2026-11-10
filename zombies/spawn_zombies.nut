@@ -17,7 +17,7 @@ ZSpawner.ValidSpawnPoints      <- {}
 
 function ZSpawner::_OnDestroy() {
 
-    EntFire("__z_*", "Kill" )
+    EntFire( "__z_*", "Kill" )
 }
 
 function ZSpawner::Pause()  { Paused = true }
@@ -48,14 +48,14 @@ function ZSpawner::GetValidSpawnPoints() {
                 areas[area] <- player
         }
 
-        if ( !(i % 2) )
+        if ( !( i % 2 ) )
             yield true
     }
 
     local i = 0
     foreach( area, player in areas ) {
 
-        if ( !(i % VALID_SPAWN_COLLECTION_PER_THINK) )
+        if ( !( i % VALID_SPAWN_COLLECTION_PER_THINK ) )
             yield true
 
         i++
@@ -99,7 +99,7 @@ function ZSpawner::ThinkTable::SpawnZombiesThink() {
 
     if ( Paused || CurZombies >= MaxZombies )
         return -1
-    
+
     else if ( !ValidSpawnPoints.len() || "PopulateSafeNav" in ZNav.ThinkTable )
         return -1
 
@@ -113,11 +113,11 @@ function ZSpawner::ThinkTable::SpawnZombiesThink() {
 
     CurZombies++
 
-    // AddOutput( zombie.base_ent, "OnKilled", "__zspawner", "RunScriptCode", "CurZombies--", -1, -1)
+    // AddOutput( zombie.base_ent, "OnKilled", "__zspawner", "RunScriptCode", "CurZombies--", -1, -1 )
     return -1
 }
 
-HOOK_EVENT( "teamplay_round_start", "ZSpawnerReset", function( _) {
+HOOK_EVENT( "teamplay_round_start", "ZSpawnerReset", function( _ ) {
 
     ZSpawner.CurZombies = 0
-})
+} )

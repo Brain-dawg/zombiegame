@@ -1,4 +1,4 @@
-if ( !("__active_scopes" in ROOT) )
+if ( !( "__active_scopes" in ROOT ) )
     ::__active_scopes <- {}
 
 function __CREATE_SCOPE( name, scope_ref = null, entity_ref = null, think_func = null, preserved = true ) {
@@ -37,7 +37,7 @@ function __CREATE_SCOPE( name, scope_ref = null, entity_ref = null, think_func =
 			local think_name = think_func.getinfos().name || format( "%s_Think", name )
 
 			ent_scope[ think_name ] <- think_func
-			try { _AddThinkToEnt( ent, think_name ) } catch (_) { AddThinkToEnt( ent, think_name ) }
+			try { _AddThinkToEnt( ent, think_name ) } catch ( _ ) { AddThinkToEnt( ent, think_name ) }
 			return
 		}
 
@@ -46,7 +46,7 @@ function __CREATE_SCOPE( name, scope_ref = null, entity_ref = null, think_func =
 		// Allows us to use any arbitrary string for the think function name
 		// scope.MyFunc <- function() { ... } creates an anonymous function
 		// won't show up in the performance counter
-		compilestring(format(@"
+		compilestring( format( @"
 
 			local ent = EntIndexToHScript( %d )
 			local func_name = %s
@@ -63,11 +63,11 @@ function __CREATE_SCOPE( name, scope_ref = null, entity_ref = null, think_func =
 
 		", ent.entindex(), format( "\"%s\"", think_func ), think_func, think_func ) )()
 
-		try { _AddThinkToEnt( ent, think_func ) } catch (_) { AddThinkToEnt( ent, think_func ) }
+		try { _AddThinkToEnt( ent, think_func ) } catch ( _ ) { AddThinkToEnt( ent, think_func ) }
 		// delete ROOT[ think_func ]
 	}
 
-	ent_scope.setdelegate({
+	ent_scope.setdelegate( {
 
 		function _newslot( k, v ) {
 
@@ -80,7 +80,7 @@ function __CREATE_SCOPE( name, scope_ref = null, entity_ref = null, think_func =
 
 		}
 
-	}.setdelegate({
+	}.setdelegate( {
 
 			parent     = ent_scope.getdelegate()
 			id         = ent.GetScriptId()
@@ -111,11 +111,11 @@ function __CREATE_SCOPE( name, scope_ref = null, entity_ref = null, think_func =
 
 				delete parent[k]
 			}
-		})
+		} )
 	)
 
 	// function InputRunScriptCode() {
-	// 	printl(self)
+	// 	printl( self )
 	// 	return true
 	// }
 

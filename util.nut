@@ -84,7 +84,7 @@ ZUtil.ConVars      <- {} // convar tracking to revert to original values
 ZUtil.EntShredder  <- [] // entity shredder.  Fixed number of entities deleted per tick.
 
 // mitigate CUtlRBTree overflows
-if ( !("GameStrings" in ZUtil) )
+if ( !( "GameStrings" in ZUtil ) )
     ZUtil.GameStrings <- []
 
 ZUtil.ROBOT_ARM_PATHS <- [
@@ -217,7 +217,7 @@ ZUtil.PROJECTILE_WEAPONS <- {
 // Think functions will instead be added to a table with the value of the first element in the array
 // You should always use ZUtil.AddThink instead to handle these gracefully.
 
-// e.g. calling AddThinkToEnt( player, "MyFunc") with the default config:
+// e.g. calling AddThinkToEnt( player, "MyFunc" ) with the default config:
 // - Creates a table named "PlayerThinkTable" and a think function named "PlayerThinks" in player scope
 // - The "true" think function is set to "PlayerThinks", this function iterates over the table and calls each function
 // - Passing null will simply clear the think table
@@ -261,7 +261,7 @@ ZUtil.DeflectableProjectiles <- {
 	tf_projectile_stun_ball			   = 1 // Baseball
 }
 
-if (!("__EntFireByHandle" in ROOT)) {
+if ( !( "__EntFireByHandle" in ROOT ) ) {
 
 	::__EntFireByHandle <- ::EntFireByHandle
 
@@ -301,10 +301,10 @@ function ZUtil::_OnCreate() {
     EntFire( "player", "RunScriptCode", "ZUtil.RegisterPlayer( self )" )
 }
 
-function ZUtil::DevPrint(message, ...)
-{
-    if (developer())
-        printf.acall([this, "[DEBUG] " + message + "\n"].extend(vargv))
+function ZUtil::DevPrint( message, ... ) { 
+
+    if ( developer() )
+        printf.acall( [this, "[DEBUG] " + message + "\n"].extend( vargv ) )
 }
 
 function ZUtil::EntityManager() {
@@ -371,7 +371,7 @@ function ZUtil::GameStringGenerator() {
 
     if ( !count ) return
 
-	for (local i = count - 1; i >= 0; i--) {
+	for ( local i = count - 1; i >= 0; i-- ) {
 
         if ( !( i in GameStrings ) )
             continue
@@ -379,10 +379,10 @@ function ZUtil::GameStringGenerator() {
 		PurgeGameString( GameStrings[i], false )
         GameStrings.remove( i )
 
-        if ( !(i % STRING_PURGE_PER_THINK) ) {
-        
+        if ( !( i % STRING_PURGE_PER_THINK ) ) {
+
             if ( Debug.STRING_PURGE )
-                DevPrint( "PURGING GAME STRINGS (%d / %d)", i, count)
+                DevPrint( "PURGING GAME STRINGS ( %d / %d )", i, count )
 
             yield true
         }
@@ -488,7 +488,7 @@ function ZUtil::SpawnEnt( ... ) {
 		scope.Inputendtouch <- TouchCrashFix.bindenv( scope )
 		::DispatchSpawn( ent )
 		ent.SetSolid( SOLID_BBOX )
-		ent.SetSize( Vector(), Vector( 1, 1, 1) )
+		ent.SetSize( Vector(), Vector( 1, 1, 1 ) )
 	}
 
 	SetPropBool( ent, STRING_NETPROP_PURGESTRINGS, true )
@@ -1173,13 +1173,13 @@ function ZUtil::PointScriptTemplate( targetname = null, onspawn = null ) {
 	local template_scope = GetEntScope( template )
 	template_scope.ents <- []
 
-	template_scope.__EntityMakerResult <- { entities = template_scope.ents }.setdelegate({
+	template_scope.__EntityMakerResult <- { entities = template_scope.ents }.setdelegate( {
 
 		function _newslot( _, value ) {
 
 			entities.append( value )
 		}
-	})
+	} )
 
 	if ( onspawn )
 		template_scope.PostSpawn <- onspawn.bindenv( template_scope )
@@ -1198,7 +1198,7 @@ function ZUtil::AttachParticle( ent, particle, attachment_name ) {
 		TriggerParticle.KeyValueFromString( "attachment_name", attachment_name )
 		TriggerParticle.KeyValueFromInt( "attachment_type", 4 )
 		TriggerParticle.KeyValueFromInt( "spawnflags", 1 )
-		DispatchSpawn(TriggerParticle)
+		DispatchSpawn( TriggerParticle )
 	}
 
 	SetPropString( TriggerParticle, "m_iszParticleName", particle )
@@ -1572,7 +1572,7 @@ function ZUtil::Ignite( player, duration = 10.0, damage = 1 ) {
 			burn_duration = duration
 			damage 		  = damage
 			spawnflags 	  = SF_TRIGGER_ALLOW_CLIENTS
-	})
+	} )
 
 	EntFireByHandle( utilignite, "StartTouch", null, -1, player, player )
 	EntFireByHandle( utilignite, "EndTouch", null, SINGLE_TICK, player, player )
@@ -1585,7 +1585,7 @@ function ZUtil::ShowHudHint( text = "This is a hud hint", player = null, duratio
 		message	   = text
 		targetname = "__Zutil_hudhint"
 		spawnflags = !!player
-	})
+	} )
 
 	SetPropBool( hudhint, STRING_NETPROP_PURGESTRINGS, true )
 	hudhint.KeyValueFromString( "message", text )
@@ -1778,14 +1778,14 @@ function ZUtil::GiveWeapon( player, class_name, item_id ) {
 		if ( old = GetPropEntityArray( player, STRING_NETPROP_MYWEAPONS, i ) ) {
 
 			if ( old.GetSlot() != slot ) continue
-			
+
 			EntShredder.append( old )
 			SetPropEntityArray( player, STRING_NETPROP_MYWEAPONS, weapon, i )
 
 			break
 		}
 	}
-	
+
 	player.Weapon_Equip( weapon )
 	WeaponSwitchSlot( player, slot )
 
@@ -1827,23 +1827,23 @@ function ZUtil::SetPlayerClassRespawnAndTeleport( player, playerclass, location_
 
 function ZUtil::PlaySoundOnClient( player, name, volume = 1.0, pitch = 100 ) {
 
-	EmitSoundEx({
+	EmitSoundEx( {
 
 		sound_name = name
 		volume = volume
 		pitch = pitch
 		entity = player
 		filter_type = RECIPIENT_FILTER_SINGLE_PLAYER
-	})
+	} )
 }
 
 function ZUtil::PlaySoundOnAllClients( name ) {
 
-	EmitSoundEx({
+	EmitSoundEx( {
 
 		sound_name = name
 		filter_type = RECIPIENT_FILTER_GLOBAL
-	})
+	} )
 }
 
 function ZUtil::StopAndPlayMVMSound( player, soundscript, delay ) {
@@ -1874,10 +1874,10 @@ function ZUtil::CharReplace( str, findwhat, replace, firstonly = false ) {
 
 	// one-liner version
 	// local strlen = str.len()
-	// ( array(strlen, "").apply( @(i, c) str[i] == findwhat ? replace : c ) ).apply( @(c) returnstring += c.tochar() )
+	// ( array( strlen, "" ).apply( @( i, c ) str[i] == findwhat ? replace : c ) ).apply( @( c ) returnstring += c.tochar() )
 
 	// alternate
-	// local charlist = array(strlen, "").apply( @(c, i) str[i] == findwhat ? replace : c )
+	// local charlist = array( strlen, "" ).apply( @( c, i ) str[i] == findwhat ? replace : c )
 
 	foreach( i, c in str ) {
 
@@ -2047,7 +2047,7 @@ function ZUtil::RoundWin( team = 2 ) {
 		force_map_reset = true
 		TeamNum         = team
 		switch_teams    = false
-	})
+	} )
 
     SetValue( "mp_humans_must_join_team", "red" )
 	round_win.AcceptInput( "RoundWin", null, null, null )
@@ -2057,16 +2057,16 @@ function ZUtil::RoundWin( team = 2 ) {
 		for ( local ent; ent = FindByClassname( ent, cls ); )
 			ZUtil.EntShredder.append( ent )
 
-	ScriptEntFireSafe("player", @"
+	ScriptEntFireSafe( "player", @"
 
 		// AddThinkToEnt( self, null )
 		// SetPropString( self, `m_iszScriptThinkFunction`, `` )
-		self.AcceptInput(`DispatchEffect`, `ParticleEffectStop`, null, null )
-		SetPropInt(self, `m_nRenderMode`, kRenderTransColor )
-		SetPropInt(self, `m_clrRender`, 0 )
+		self.AcceptInput( `DispatchEffect`, `ParticleEffectStop`, null, null )
+		SetPropInt( self, `m_nRenderMode`, kRenderTransColor )
+		SetPropInt( self, `m_clrRender`, 0 )
 		self.DisableDraw()
 		SetPropBool( self, `m_bGlowEnabled`, false )
-	")
+	" )
 	// EntFire( "player", "TerminateScriptScope", null, 0.1 )
 }
 
@@ -2159,7 +2159,7 @@ function ZUtil::IsSpaceToSpawnHere( where, hullmin, hullmax ) {
 
 function ZUtil::ClearLastKnownArea( bot ) {
 
-	local trigger = SpawnEntityFromTable( "trigger_remove_tf_player_condition", { spawnflags = SF_TRIGGER_ALLOW_CLIENTS condition = TF_COND_TMPDAMAGEBONUS })
+	local trigger = SpawnEntityFromTable( "trigger_remove_tf_player_condition", { spawnflags = SF_TRIGGER_ALLOW_CLIENTS condition = TF_COND_TMPDAMAGEBONUS } )
 	trigger.AcceptInput( "StartTouc", "!activator", bot, bot )
 	EntShredder.append( trigger )
 }
@@ -2173,7 +2173,7 @@ function ZUtil::KillPlayer( player ) {
 
 function ZUtil::KillZombie( zombie ) {
 
-	SendGlobalGameEvent( "npc_hurt", {attacker_player = 0, damageamount = INT_MAX, entindex = zombie.entindex()})
+	SendGlobalGameEvent( "npc_hurt", {attacker_player = 0, damageamount = INT_MAX, entindex = zombie.entindex()} )
 }
 
 function ZUtil::KillAllBots() {
@@ -2213,7 +2213,7 @@ function ZUtil::ScriptEntFireSafe( target, code, delay = -1, activator = null, c
 
         if ( self && self.IsValid() ) {
 
-            if ( self.IsPlayer() && !self.IsAlive() && !%d ) {
+            if ( !%d && self.IsPlayer() && !self.IsAlive() ) {
 
                 return
             }
@@ -2294,7 +2294,7 @@ function ZUtil::ForEachItem( player, func, weapons_only = false ) {
 
 	for ( local child = player.FirstMoveChild(); child; child = child.NextMovePeer() ) {
 
-		if ( !child || !child.IsValid() || !(child instanceof CEconEntity) )
+		if ( !child || !child.IsValid() || !( child instanceof CEconEntity ) )
 			continue
 
 		else if ( weapons_only && !( child instanceof CBaseCombatWeapon ) )
@@ -2369,7 +2369,7 @@ function ZUtil::ToStrictNum( str, float = false ) {
 	if ( typeof str == "string" ) {
 
 		str = strip( str )
-		local rex = regexp( @"-?[0-9]+( \.[0-9]+ )?" )
+		local rex = regexp( @"-?[0-9]+(\.[0-9]+)?" )
 		if ( !rex.match( str ) ) return
 	}
 
@@ -2399,7 +2399,7 @@ function ZUtil::AddThink( ent, func ) {
 
 			// if ( thinktable_name == "PlayerThinkTable" ) {
 
-			// 	ForEachItem( ent, @( item ) AddThink( item, func ))
+			// 	ForEachItem( ent, @( item ) AddThink( item, func ) )
 			// }
 			break
 		}
@@ -2417,7 +2417,7 @@ function ZUtil::AddThink( ent, func ) {
 			func_name = func.getinfos().name || format( "__%s_ANONYMOUS_THINK", ent.GetName() )
 			scope[ func_name ] <- func.bindenv( scope )
 		}
-		else if ( !(func in scope) && func in ROOT ) {
+		else if ( !( func in scope ) && func in ROOT ) {
 
 			func_name = func
 			scope[ func_name ] <- ROOT[ func_name ].bindenv( scope )
@@ -2488,11 +2488,11 @@ function ZUtil::RemoveThink( ent, func = null ) {
 	if ( typeof func == "function" )
 		func = func.getinfos().name || format( "__%s_ANONYMOUS_THINK", ent.GetName() )
 
-	// Assert( (func in scope[ thinktable_name ]), format( "Function %s not found in thinktable %s", func, thinktable_name ) )
+	// Assert( ( func in scope[ thinktable_name ] ), format( "Function %s not found in thinktable %s", func, thinktable_name ) )
 
-	if (!func || func == "" )
+	if ( !func || func == "" )
 		return scope[ thinktable_name ].clear()
-	else if ( !( func in scope[ thinktable_name ] ) ) 
+	else if ( !( func in scope[ thinktable_name ] ) )
 		return // printf( "Function %s not found in thinktable %s\n", func, thinktable_name )
 
 	delete scope[ thinktable_name ][ func ]
